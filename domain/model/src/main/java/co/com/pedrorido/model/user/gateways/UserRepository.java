@@ -1,4 +1,10 @@
 package co.com.pedrorido.model.user.gateways;
 
+import co.com.pedrorido.model.user.User;
+import reactor.core.publisher.Mono;
+
 public interface UserRepository {
+    Mono<User> saveUser(User user);
+    Mono<User> findUserById(String idUser);
+    Mono<Boolean> emailAlreadyRegistered(String email);
 }

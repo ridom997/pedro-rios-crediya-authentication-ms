@@ -1,0 +1,33 @@
+package co.com.pedrorido.r2dbc;
+
+import co.com.pedrorido.model.user.User;
+import co.com.pedrorido.model.user.gateways.UserRepository;
+import co.com.pedrorido.r2dbc.entity.UserEntity;
+import co.com.pedrorido.r2dbc.helper.ReactiveAdapterOperations;
+import org.reactivecommons.utils.ObjectMapper;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
+
+@Repository
+public class UserRepositoryAdapter extends ReactiveAdapterOperations<User, UserEntity, String, UserReactiveRepository> implements UserRepository {
+    public UserRepositoryAdapter(UserReactiveRepository repository, ObjectMapper mapper) {
+        super(repository, mapper, d -> mapper.map(d, User.class));
+    }
+
+    @Override
+    @Transactional
+    public Mono<User> saveUser(User user) {
+        return super.save(user);
+    }
+
+    @Override
+    public Mono<User> findUserById(String idUser) {
+        return super.findById(idUser);
+    }
+
+    @Override
+    public Mono<Boolean> emailAlreadyRegistered(String email) {
+        return repository.existsByEmailIgnoreCase(email);
+    }
+}
