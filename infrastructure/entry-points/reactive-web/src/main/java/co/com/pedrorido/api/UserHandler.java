@@ -108,7 +108,7 @@ public class UserHandler {
                 .filter(StringUtils::hasText)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Missing 'documentNumber' query param")))
                 .doOnNext(log::info)
-                .flatMap(doc -> userUseCase.userExistsByDocumentNumber(doc)) // Mono<Boolean>
+                .flatMap(doc -> userUseCase.userExistsByDocumentNumber(doc).as(tx::transactional))
                 .map(existMap -> {
                     return new ResponseEntity<>(
                             GeneralResponseDTO.<Boolean>builder()
