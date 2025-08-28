@@ -20,6 +20,11 @@ public class RouterRest {
                     path = "/api/v1/usuarios",
                     beanClass = UserHandler.class,
                     beanMethod = "listenSaveUser"
+            ),
+            @RouterOperation(
+                    path = "/api/v1/users/exist",
+                    beanClass = UserHandler.class,
+                    beanMethod = "existsByDocumentNumber"
             )
     })
     public RouterFunction<ServerResponse> routerFunction(UserHandler userHandler) {
@@ -28,6 +33,15 @@ public class RouterRest {
                         .and(accept(MediaType.APPLICATION_JSON))
                         .and(contentType(MediaType.APPLICATION_JSON)),
                 res -> userHandler.listenSaveUser(res)
+                        .flatMap(re -> ServerResponse
+                                .status(re.getStatusCode())
+                                .headers(h -> h.addAll(re.getHeaders()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(re.getBody()))
+        ).andRoute(
+                GET("/api/v1/users/exist")
+                        .and(queryParam("documentNumber", v -> v != null && !v.isBlank())),
+                req -> userHandler.listenUserExistsByDocumentNumber(req)
                         .flatMap(re -> ServerResponse
                                 .status(re.getStatusCode())
                                 .headers(h -> h.addAll(re.getHeaders()))

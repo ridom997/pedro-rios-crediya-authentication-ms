@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
@@ -75,6 +76,47 @@ public class UserHandler {
                                     .data(data)
                                     .build(),
                             HttpStatus.CREATED);
+                })
+                .doOnSuccess(log::info)
+                .doOnError(log::error);
+    }
+
+    @Operation(
+            summary = "Verificar existencia de un usuario por número de documento",
+            description = "Comprueba si un usuario existe en el sistema proporcionado su número de documento. Devuelve un valor booleano indicando la existencia del usuario.",
+            requestBody = @RequestBody(
+                    description = "Número de documento del usuario",
+                    required = true,
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "La solicitud fue exitosa y la respuesta contiene un valor booleano indicando si el usuario existe.",
+                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GeneralResponseDTO.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "El usuario no fue encontrado o no existe.",
+                            content = @Content
+                    )
+            }
+    )
+
+    public Mono<ResponseEntity<GeneralResponseDTO<Boolean>>> listenUserExistsByDocumentNumber(ServerRequest serverRequest) {
+        return Mono.justOrEmpty(serverRequest.queryParam("documentNumber"))
+                .filter(StringUtils::hasText)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Missing 'documentNumber' query param")))
+                .doOnNext(log::info)
+                .flatMap(doc -> userUseCase.userExistsByDocumentNumber(doc)) // Mono<Boolean>
+                .map(existMap -> {
+                    return new ResponseEntity<>(
+                            GeneralResponseDTO.<Boolean>builder()
+                                    .success(true)
+                                    .message("User existence validated successfully")
+                                    .data(existMap)
+                                    .build(),
+                            existMap.get("userExists") ? HttpStatus.OK : HttpStatus.NOT_FOUND);
                 })
                 .doOnSuccess(log::info)
                 .doOnError(log::error);
