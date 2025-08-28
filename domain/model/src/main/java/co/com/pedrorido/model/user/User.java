@@ -25,6 +25,7 @@ public class User {
     private String email;
     private BigDecimal baseSalary;
     private String roleId;
+    private String documentNumber;
 
     private static final Pattern EMAIL_RX =
             Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
@@ -32,7 +33,7 @@ public class User {
     public static User of(
             String id, String name, String surname, LocalDate birthDate,
             String address, String phone, String email,
-            BigDecimal baseSalary, String roleId
+            BigDecimal baseSalary, String roleId, String documentNumber
     ) {
         requireText("name", name);
         requireText("surname", surname);
@@ -56,7 +57,8 @@ public class User {
                 phone,
                 email.trim(),
                 baseSalary,
-                roleId
+                roleId,
+                documentNumber
         );
     }
 

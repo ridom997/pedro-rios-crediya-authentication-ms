@@ -5,13 +5,16 @@ import co.com.pedrorido.api.dto.UserDTO;
 import co.com.pedrorido.api.mapper.UserDTOMapper;
 import co.com.pedrorido.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,9 +24,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @Component
 @RequiredArgsConstructor
+@Log4j2
 public class UserHandler {
     private final UserUseCase userUseCase;
     private final UserDTOMapper userDTOMapper;
+    private final TransactionalOperator tx;
 
     @Operation(
             summary = "Guardar usuario",
@@ -54,8 +59,11 @@ public class UserHandler {
     public Mono<ResponseEntity<GeneralResponseDTO<UserDTO>>> listenSaveUser(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(UserDTO.class)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body is required")))
+                .doOnNext(log::info)
                 .map(userDTOMapper::toDomain)
-                .flatMap(userUseCase::saveUser)
+                .flatMap(domainUser -> {
+                    return userUseCase.saveUser(domainUser).as(tx::transactional);
+                })
                 .map(userDTOMapper::toDto)
                 .map(savedUserDto -> {
                     HashMap<String, UserDTO> data = new HashMap<>();
@@ -67,6 +75,8 @@ public class UserHandler {
                                     .data(data)
                                     .build(),
                             HttpStatus.CREATED);
-                });
+                })
+                .doOnSuccess(log::info)
+                .doOnError(log::error);
     }
 }

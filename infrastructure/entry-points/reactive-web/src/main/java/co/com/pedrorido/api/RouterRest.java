@@ -12,7 +12,7 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
-public class UserRouterRest {
+public class RouterRest {
 
     @Bean
     @RouterOperations({

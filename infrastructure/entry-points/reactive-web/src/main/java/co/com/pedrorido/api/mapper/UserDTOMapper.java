@@ -18,7 +18,8 @@ public interface UserDTOMapper {
                 dto.getPhone(),
                 dto.getEmail(),
                 dto.getBaseSalary(),
-                dto.getRoleId()
+                dto.getRoleId(),
+                dto.getDocumentNumber()
         );
     }
 
@@ -34,6 +35,7 @@ public interface UserDTOMapper {
                 .email(u.getEmail())
                 .baseSalary(u.getBaseSalary())
                 .roleId(u.getRoleId())
+                .documentNumber(u.getDocumentNumber())
                 .build();
     }
 }

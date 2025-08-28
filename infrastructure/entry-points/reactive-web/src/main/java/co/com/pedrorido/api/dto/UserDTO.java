@@ -21,4 +21,5 @@ public class UserDTO {
     private String email;
     private BigDecimal baseSalary;
     private String roleId;
+    private String documentNumber;
 }

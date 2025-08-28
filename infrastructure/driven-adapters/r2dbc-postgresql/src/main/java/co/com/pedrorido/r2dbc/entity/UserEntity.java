@@ -42,7 +42,10 @@ public class UserEntity {
     private BigDecimal baseSalary;
 
     @Column("direccion")
-    private String address; // Dirección del usuario.
+    private String address;
+
+    @Column("documento_identidad")
+    private String documentNumber;
 
 
 }
