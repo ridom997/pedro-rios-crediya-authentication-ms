@@ -36,7 +36,7 @@ public class UserEntity {
     private String phone;
 
     @Column("id_rol")
-    private UUID roleId;
+    private Long roleId;
 
     @Column("salario_base")
     private BigDecimal baseSalary;

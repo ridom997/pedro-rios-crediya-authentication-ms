@@ -20,6 +20,6 @@ public class UserDTO {
     private String phone;
     private String email;
     private BigDecimal baseSalary;
-    private String roleId;
+    private Long roleId;
     private String documentNumber;
 }

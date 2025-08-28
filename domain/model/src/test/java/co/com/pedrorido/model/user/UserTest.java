@@ -21,7 +21,7 @@ class UserTest {
         String phone = "555-1234";
         String email = "john.doe@example.com";
         BigDecimal baseSalary = BigDecimal.valueOf(5000000);
-        String roleId = "admin";
+        Long roleId = 1L;
         String documentNumber = "123456";
 
         // Act
@@ -57,7 +57,7 @@ class UserTest {
                         "555-1234",
                         "john.doe@example.com",
                         BigDecimal.valueOf(5000000),
-                        "admin",
+                        1L,
                         "123456"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
@@ -73,7 +73,7 @@ class UserTest {
                         "555-1234",
                         "john.doe@example.com",
                         BigDecimal.valueOf(5000000),
-                        "admin",
+                        1L,
                         "123456"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
@@ -96,7 +96,7 @@ class UserTest {
                         "555-1234",
                         invalidEmail,
                         BigDecimal.valueOf(5000000),
-                        "admin",
+                        1L,
                         "123456"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
@@ -116,7 +116,7 @@ class UserTest {
                         "555-1234",
                         "john.doe@example.com",
                         BigDecimal.valueOf(-1),
-                        "admin",
+                        1L,
                         "123456"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
@@ -132,7 +132,7 @@ class UserTest {
                         "555-1234",
                         "john.doe@example.com",
                         BigDecimal.valueOf(20000000),
-                        "admin",
+                        1L,
                         "123456"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
@@ -154,7 +154,7 @@ class UserTest {
                 "555-1234",
                 "john.doe@example.com",
                 minSalary,
-                "admin",
+                1L,
                 "123456"
         );
 
@@ -167,7 +167,7 @@ class UserTest {
                 "555-1234",
                 "john.doe@example.com",
                 maxSalary,
-                "admin",
+                1L,
                 "123456"
         );
 

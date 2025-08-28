@@ -93,7 +93,7 @@ class UserUseCaseTest {
                 .phone("3001234567")
                 .email("pedro.rido@example.com")
                 .baseSalary(new BigDecimal("3500.75"))
-                .roleId("ROLE_ADMIN")
+                .roleId(1L)
                 .build();
     }
 }

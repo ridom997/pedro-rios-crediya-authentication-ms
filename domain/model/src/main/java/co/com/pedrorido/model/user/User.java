@@ -24,7 +24,7 @@ public class User {
     private String phone;
     private String email;
     private BigDecimal baseSalary;
-    private String roleId;
+    private Long roleId;
     private String documentNumber;
 
     private static final Pattern EMAIL_RX =
@@ -33,7 +33,7 @@ public class User {
     public static User of(
             String id, String name, String surname, LocalDate birthDate,
             String address, String phone, String email,
-            BigDecimal baseSalary, String roleId, String documentNumber
+            BigDecimal baseSalary, Long roleId, String documentNumber
     ) {
         requireText("name", name);
         requireText("surname", surname);
