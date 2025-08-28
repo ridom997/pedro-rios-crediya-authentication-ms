@@ -11,13 +11,6 @@ spring:
       path: "/h2"
   profiles:
     include: null
-  datasource:
-    url: "jdbc:h2:mem:test"
-    username: "sa"
-    password: "pass"
-    driverClassName: "org.h2.Driver"
-  jpa:
-    databasePlatform: "org.hibernate.dialect.H2Dialect"
 management:
   endpoints:
     web:
@@ -29,3 +22,12 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+adapters:
+  r2dbc:
+    host: "localhost"
+    port: 5432
+    database: "crediya"
+    schema: "public"
+    username: "admin"
+    password: "admin123"

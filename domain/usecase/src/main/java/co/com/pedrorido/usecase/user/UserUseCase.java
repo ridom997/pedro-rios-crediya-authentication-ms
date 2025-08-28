@@ -1,6 +1,21 @@
 package co.com.pedrorido.usecase.user;
 
+import co.com.pedrorido.model.user.User;
+import co.com.pedrorido.model.user.gateways.UserRepository;
+import co.com.pedrorido.usecase.user.api.IUserApi;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
+
 @RequiredArgsConstructor
-public class UserUseCase {
+public class UserUseCase implements IUserApi {
+    private final UserRepository userRepository;
+
+    @Override
+    public Mono<User> saveUser(User user) {
+        return userRepository.emailAlreadyRegistered(user.getEmail())
+                .flatMap(exists -> {
+                    if (exists) return Mono.error(new IllegalStateException("email already registered"));
+                    return userRepository.saveUser(user);
+                });
+    }
 }
