@@ -25,9 +25,9 @@ public class UserRepositoryAdapter extends ReactiveAdapterOperations<User, UserE
     }
 
     @Override
-    public Mono<User> findUserById(String idUser) {
-        log.info("Finding user by id {}", idUser);
-        return super.findById(idUser);
+    public Mono<Boolean> userExistsByDocumentNumber(String documentNumber) {
+        log.info("Checking if user with documentNumber {} is registered", documentNumber);
+        return repository.existsByDocumentNumber(documentNumber);
     }
 
     @Override

@@ -16,5 +16,5 @@
 
 ### Prerequisites
 
-* JDK 17 or later.
+* JDK 21.
 * Gradle version 8.8 or later.

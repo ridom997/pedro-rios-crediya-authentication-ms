@@ -11,6 +11,7 @@ import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
@@ -96,4 +97,37 @@ class UserUseCaseTest {
                 .roleId(1L)
                 .build();
     }
+
+    @Test
+    void userExistsByDocumentNumber_WhenDocumentExists_ReturnsTrue() {
+        // Arrange
+        String documentNumber = "123456789";
+        when(userRepository.userExistsByDocumentNumber(documentNumber))
+                .thenReturn(Mono.just(true));
+
+        // Act
+        Mono<Map<String, Boolean>> result = userUseCase.userExistsByDocumentNumber(documentNumber);
+
+        // Assert
+        StepVerifier.create(result)
+                .expectNext(Map.of("userExists", true))
+                .verifyComplete();
+    }
+
+    @Test
+    void userExistsByDocumentNumber_WhenDocumentDoesNotExist_ReturnsFalse() {
+        // Arrange
+        String documentNumber = "987654321";
+        when(userRepository.userExistsByDocumentNumber(documentNumber))
+                .thenReturn(Mono.just(false));
+
+        // Act
+        Mono<Map<String, Boolean>> result = userUseCase.userExistsByDocumentNumber(documentNumber);
+
+        // Assert
+        StepVerifier.create(result)
+                .expectNext(Map.of("userExists", false))
+                .verifyComplete();
+    }
+
 }
