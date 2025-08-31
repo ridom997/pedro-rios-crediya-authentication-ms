@@ -6,6 +6,8 @@ import co.com.pedrorido.usecase.user.api.IUserApi;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @RequiredArgsConstructor
 public class UserUseCase implements IUserApi {
     private final UserRepository userRepository;
@@ -16,6 +18,15 @@ public class UserUseCase implements IUserApi {
                 .flatMap(exists -> {
                     if (exists) return Mono.error(new IllegalStateException("email already registered"));
                     return userRepository.saveUser(user);
+                });
+    }
+
+    @Override
+    public Mono<Map<String, Boolean>> userExistsByDocumentNumber(String documentNumber) {
+        return userRepository.userExistsByDocumentNumber(documentNumber)
+                .flatMap(exists -> {
+                    Map<String, Boolean> map = Map.of("userExists", exists);
+                    return Mono.just(map);
                 });
     }
 }
