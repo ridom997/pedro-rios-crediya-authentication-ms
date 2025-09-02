@@ -2,6 +2,7 @@ package co.com.pedrorido.r2dbc.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -46,6 +47,10 @@ public class UserEntity {
 
     @Column("documento_identidad")
     private String documentNumber;
+
+    // Relación ManyToOne con RoleEntity
+    @Transient
+    private RoleEntity role; // Esta propiedad se utiliza para definir la relación
 
 
 }

@@ -35,4 +35,10 @@ public class UserRepositoryAdapter extends ReactiveAdapterOperations<User, UserE
         log.info("Checking if email {} is already registered", email);
         return repository.existsByEmailIgnoreCase(email);
     }
+
+    @Override
+    public Mono<User> findByEmail(String email) {
+        log.info("Finding user with email {}", email);
+        return repository.findByEmail(email);
+    }
 }
