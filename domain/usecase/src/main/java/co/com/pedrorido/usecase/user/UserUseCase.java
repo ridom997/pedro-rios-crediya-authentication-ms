@@ -1,10 +1,8 @@
 package co.com.pedrorido.usecase.user;
 
-import co.com.pedrorido.model.role.gateways.RoleRepository;
-import co.com.pedrorido.model.security.gateways.PasswordHashPort;
-import co.com.pedrorido.model.security.gateways.SecurityRepository;
 import co.com.pedrorido.model.user.User;
 import co.com.pedrorido.model.user.gateways.UserRepository;
+import co.com.pedrorido.usecase.role.RoleUseCase;
 import co.com.pedrorido.usecase.user.api.IUserApi;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -14,24 +12,18 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserUseCase implements IUserApi {
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final SecurityRepository securityRepository;
-    private final PasswordHashPort passwordHashPort;
+    private final RoleUseCase roleUseCase;
 
     @Override
     public Mono<User> saveUser(User user) {
         return userRepository.emailAlreadyRegistered(user.getEmail())
                 .flatMap(exists -> {
                     if (exists.booleanValue()) return Mono.error(new IllegalStateException("email already registered"));
-                    return roleRepository.roleExistsById(user.getRoleId());
+                    return roleUseCase.roleExistsById(user.getRoleId());
                 }).flatMap(exists -> {
                     if (!exists.booleanValue()) return Mono.error(new IllegalStateException("role does not exist"));
-                    return passwordHashPort.hash(user.getPassword());
-                }).map(hash -> {
-                    user.setPassword(hash);
-                    return user;
-                })
-                .flatMap(userRepository::saveUser);
+                    return userRepository.saveUser(user);
+                });
     }
 
     @Override
@@ -41,5 +33,10 @@ public class UserUseCase implements IUserApi {
                     Map<String, Boolean> map = Map.of("userExists", exists);
                     return Mono.just(map);
                 });
+    }
+
+    @Override
+    public Mono<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 }

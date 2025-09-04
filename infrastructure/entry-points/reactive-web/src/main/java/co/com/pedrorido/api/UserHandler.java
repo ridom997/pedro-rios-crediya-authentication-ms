@@ -4,6 +4,7 @@ import co.com.pedrorido.api.dto.GeneralResponseDTO;
 import co.com.pedrorido.api.dto.UserDTO;
 import co.com.pedrorido.api.mapper.UserDTOMapper;
 import co.com.pedrorido.usecase.user.UserUseCase;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,7 @@ public class UserHandler {
     @Operation(
             summary = "Guardar usuario",
             description = "Recibe un objeto UserDTO en el cuerpo de la solicitud, lo procesa y guarda el usuario. Devuelve la información del usuario guardado junto con un mensaje de éxito.",
+            security = @SecurityRequirement(name = "bearerAuth"),
             requestBody = @RequestBody(
                     description = "Información del usuario a guardar",
                     required = true,

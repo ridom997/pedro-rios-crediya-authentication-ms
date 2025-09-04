@@ -1,8 +1,6 @@
 package co.com.pedrorido.usecase.user;
 
 import co.com.pedrorido.model.role.gateways.RoleRepository;
-import co.com.pedrorido.model.security.gateways.PasswordHashPort;
-import co.com.pedrorido.model.security.gateways.SecurityRepository;
 import co.com.pedrorido.model.user.User;
 import co.com.pedrorido.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,17 +26,10 @@ class UserUseCaseTest {
     @Mock
     private RoleRepository roleRepository;
 
-    @Mock
-    private SecurityRepository securityRepository;
-
-    @Mock
-    private PasswordHashPort passwordHashPort;
-
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        userUseCase = new UserUseCase(userRepository, roleRepository, securityRepository, passwordHashPort);
+        userUseCase = new UserUseCase(userRepository, roleRepository);
     }
 
     @Test

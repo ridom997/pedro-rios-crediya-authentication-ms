@@ -35,8 +35,5 @@ adapters:
 
 security:
   jwt:
-    issuer: "your-company"
-    audience: "your-apis"
-    # Para HS256: una secret de al menos 32 bytes (usa env var en prod)
-    secret: "${JWT_SECRET:dev-very-long-secret-change-me-please-0123456789}"
+    secret: "dev-very-long-secret-change-me-please-0123456789"
     expirationSeconds: 3600

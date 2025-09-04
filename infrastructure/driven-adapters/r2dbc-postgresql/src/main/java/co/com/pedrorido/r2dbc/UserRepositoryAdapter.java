@@ -6,6 +6,8 @@ import co.com.pedrorido.r2dbc.entity.UserEntity;
 import co.com.pedrorido.r2dbc.helper.ReactiveAdapterOperations;
 import lombok.extern.log4j.Log4j2;
 import org.reactivecommons.utils.ObjectMapper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -17,11 +19,18 @@ public class UserRepositoryAdapter extends ReactiveAdapterOperations<User, UserE
         super(repository, mapper, d -> mapper.map(d, User.class));
     }
 
+    private final PasswordEncoder enc = new BCryptPasswordEncoder();
+
     @Override
     @Transactional
     public Mono<User> saveUser(User user) {
-        log.info("Saving user {}", user);
-        return super.save(user);
+        return hash(user.getPassword())
+                .flatMap(hashedPassword -> {
+                            user.setPassword(hashedPassword);
+                            log.info("Saving user");
+                            return super.save(user);
+                        }
+                );
     }
 
     @Override
@@ -40,5 +49,11 @@ public class UserRepositoryAdapter extends ReactiveAdapterOperations<User, UserE
     public Mono<User> findByEmail(String email) {
         log.info("Finding user with email {}", email);
         return repository.findByEmail(email);
+    }
+
+    private Mono<String> hash(String raw) {
+        log.info("Hashing raw password");
+        return Mono.fromCallable(() -> enc.encode(raw))
+                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic());
     }
 }
