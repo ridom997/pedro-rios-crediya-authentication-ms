@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 public class UserUseCase implements IUserApi {
@@ -37,6 +38,6 @@ public class UserUseCase implements IUserApi {
 
     @Override
     public Mono<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email).switchIfEmpty(Mono.error(new NoSuchElementException("user not found")));
     }
 }

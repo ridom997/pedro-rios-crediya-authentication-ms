@@ -33,42 +33,7 @@ public class AuthHandler {
     private final RoleUseCase roleUseCase;
     private final LoginService loginService;
 
-    @Operation(
-            summary = "Autenticar usuario",
-            description = "Permite autenticar a un usuario y obtener un token JWT para acceso a recursos protegidos",
-            requestBody = @RequestBody(
-                    required = true,
-                    description = "Credenciales de acceso del usuario",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = AuthRequest.class
-                            )
-                    )
-            ),
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Inicio de sesión exitoso",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = GeneralResponseDTO.class)
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "Credenciales inválidas",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(example = "{\"error\": \"bad_credentials\"}")
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "500",
-                            description = "Error interno del servidor"
-                    )
-            }
-    )
+
     public Mono<ResponseEntity<GeneralResponseDTO<String>>> login(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(AuthRequest.class)
                 .flatMap(req -> {

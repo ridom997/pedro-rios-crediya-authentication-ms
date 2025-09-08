@@ -1,10 +1,11 @@
 package co.com.pedrorido.usecase.user;
 
-import co.com.pedrorido.model.role.gateways.RoleRepository;
 import co.com.pedrorido.model.user.User;
 import co.com.pedrorido.model.user.gateways.UserRepository;
+import co.com.pedrorido.usecase.role.RoleUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
@@ -13,79 +14,24 @@ import reactor.test.StepVerifier;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static org.mockito.Mockito.*;
 
 
 class UserUseCaseTest {
-    private UserUseCase userUseCase;
-
     @Mock
     private UserRepository userRepository;
 
     @Mock
-    private RoleRepository roleRepository;
+    private RoleUseCase roleUseCase;
+
+    @InjectMocks
+    private UserUseCase userUseCase;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        userUseCase = new UserUseCase(userRepository, roleRepository);
-    }
-
-    @Test
-    void shouldThrowErrorWhenEmailAlreadyRegistered() {
-        // Given
-        User user = getMockedUser();
-        when(userRepository.emailAlreadyRegistered(user.getEmail())).thenReturn(Mono.just(true));
-
-        // When
-        Mono<User> result = userUseCase.saveUser(user);
-
-        // Then
-        StepVerifier.create(result)
-                .expectError(IllegalStateException.class)
-                .verify();
-
-        verify(userRepository, times(1)).emailAlreadyRegistered(user.getEmail());
-        verify(userRepository, never()).saveUser(any());
-    }
-
-    @Test
-    void shouldSaveUserWhenEmailNotRegistered() {
-        // Given
-        User user = getMockedUser();
-        when(userRepository.emailAlreadyRegistered(user.getEmail())).thenReturn(Mono.just(false));
-        when(userRepository.saveUser(user)).thenReturn(Mono.just(user));
-
-        // When
-        Mono<User> result = userUseCase.saveUser(user);
-
-        // Then
-        StepVerifier.create(result)
-                .expectNext(user)
-                .verifyComplete();
-
-        verify(userRepository, times(1)).emailAlreadyRegistered(user.getEmail());
-        verify(userRepository, times(1)).saveUser(user);
-    }
-
-    @Test
-    void shouldPropagateErrorFromSaveUser() {
-        // Given
-        User user = getMockedUser();
-        when(userRepository.emailAlreadyRegistered(user.getEmail())).thenReturn(Mono.just(false));
-        when(userRepository.saveUser(user)).thenReturn(Mono.error(new RuntimeException("Save failed")));
-
-        // When
-        Mono<User> result = userUseCase.saveUser(user);
-
-        // Then
-        StepVerifier.create(result)
-                .expectError(RuntimeException.class)
-                .verify();
-
-        verify(userRepository, times(1)).emailAlreadyRegistered(user.getEmail());
-        verify(userRepository, times(1)).saveUser(user);
     }
 
     private User getMockedUser() {
@@ -102,35 +48,108 @@ class UserUseCaseTest {
     }
 
     @Test
-    void userExistsByDocumentNumber_WhenDocumentExists_ReturnsTrue() {
-        // Arrange
-        String documentNumber = "123456789";
-        when(userRepository.userExistsByDocumentNumber(documentNumber))
-                .thenReturn(Mono.just(true));
+    void saveUser_Success() {
+        User user = getMockedUser();
 
-        // Act
-        Mono<Map<String, Boolean>> result = userUseCase.userExistsByDocumentNumber(documentNumber);
+        when(userRepository.emailAlreadyRegistered(user.getEmail())).thenReturn(Mono.just(false));
+        when(roleUseCase.roleExistsById(user.getRoleId())).thenReturn(Mono.just(true));
+        when(userRepository.saveUser(user)).thenReturn(Mono.just(user));
 
-        // Assert
-        StepVerifier.create(result)
-                .expectNext(Map.of("userExists", true))
+        StepVerifier.create(userUseCase.saveUser(user))
+                .expectNext(user)
                 .verifyComplete();
+
+        verify(userRepository).emailAlreadyRegistered(user.getEmail());
+        verify(roleUseCase).roleExistsById(user.getRoleId());
+        verify(userRepository).saveUser(user);
     }
 
     @Test
-    void userExistsByDocumentNumber_WhenDocumentDoesNotExist_ReturnsFalse() {
-        // Arrange
-        String documentNumber = "987654321";
-        when(userRepository.userExistsByDocumentNumber(documentNumber))
-                .thenReturn(Mono.just(false));
+    void saveUser_EmailAlreadyRegistered() {
+        User user = getMockedUser();
 
-        // Act
-        Mono<Map<String, Boolean>> result = userUseCase.userExistsByDocumentNumber(documentNumber);
+        when(userRepository.emailAlreadyRegistered(user.getEmail())).thenReturn(Mono.just(true));
 
-        // Assert
-        StepVerifier.create(result)
+        StepVerifier.create(userUseCase.saveUser(user))
+                .expectErrorMatches(throwable -> throwable instanceof IllegalStateException &&
+                        throwable.getMessage().equals("email already registered"))
+                .verify();
+
+        verify(userRepository).emailAlreadyRegistered(user.getEmail());
+        verifyNoInteractions(roleUseCase);
+        verify(userRepository, never()).saveUser(any());
+    }
+
+    @Test
+    void saveUser_RoleDoesNotExist() {
+        User user = getMockedUser();
+
+        when(userRepository.emailAlreadyRegistered(user.getEmail())).thenReturn(Mono.just(false));
+        when(roleUseCase.roleExistsById(user.getRoleId())).thenReturn(Mono.just(false));
+
+        StepVerifier.create(userUseCase.saveUser(user))
+                .expectErrorMatches(throwable -> throwable instanceof IllegalStateException &&
+                        throwable.getMessage().equals("role does not exist"))
+                .verify();
+
+        verify(userRepository).emailAlreadyRegistered(user.getEmail());
+        verify(roleUseCase).roleExistsById(user.getRoleId());
+        verify(userRepository, never()).saveUser(any());
+    }
+
+    @Test
+    void userExistsByDocumentNumber_UserExists() {
+        String documentNumber = "12345678";
+
+        when(userRepository.userExistsByDocumentNumber(documentNumber)).thenReturn(Mono.just(true));
+
+        StepVerifier.create(userUseCase.userExistsByDocumentNumber(documentNumber))
+                .expectNext(Map.of("userExists", true))
+                .verifyComplete();
+
+        verify(userRepository).userExistsByDocumentNumber(documentNumber);
+    }
+
+    @Test
+    void userExistsByDocumentNumber_UserDoesNotExist() {
+        String documentNumber = "12345678";
+
+        when(userRepository.userExistsByDocumentNumber(documentNumber)).thenReturn(Mono.just(false));
+
+        StepVerifier.create(userUseCase.userExistsByDocumentNumber(documentNumber))
                 .expectNext(Map.of("userExists", false))
                 .verifyComplete();
+
+        verify(userRepository).userExistsByDocumentNumber(documentNumber);
     }
+
+    @Test
+    void findByEmail_UserFound() {
+        User user = getMockedUser();
+        String email = user.getEmail();
+
+        when(userRepository.findByEmail(email)).thenReturn(Mono.just(user));
+
+        StepVerifier.create(userUseCase.findByEmail(email))
+                .expectNext(user)
+                .verifyComplete();
+
+        verify(userRepository).findByEmail(email);
+    }
+
+    @Test
+    void findByEmail_UserNotFound() {
+        String email = "notfound@example.com";
+
+        when(userRepository.findByEmail(email)).thenReturn(Mono.empty());
+
+        StepVerifier.create(userUseCase.findByEmail(email))
+                .expectErrorMatches(throwable -> throwable instanceof NoSuchElementException &&
+                        throwable.getMessage().equals("user not found"))
+                .verify();
+
+        verify(userRepository).findByEmail(email);
+    }
+
 
 }
