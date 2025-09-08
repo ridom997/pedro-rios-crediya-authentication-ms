@@ -31,3 +31,9 @@ adapters:
     schema: "public"
     username: "admin"
     password: "admin123"
+
+
+security:
+  jwt:
+    secret: "dev-very-long-secret-change-me-please-0123456789"
+    expirationSeconds: 3600

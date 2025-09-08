@@ -20,16 +20,16 @@ class UserTest {
         String address = "123 Some St";
         String phone = "555-1234";
         String email = "john.doe@example.com";
+        String password = "password";
         BigDecimal baseSalary = BigDecimal.valueOf(5000000);
         Long roleId = 1L;
         String documentNumber = "123456";
 
         // Act
-        User user = User.of(id, name, surname, birthDate, address, phone, email, baseSalary, roleId, documentNumber);
+        User user = User.of(name, surname, birthDate, address, phone, email, baseSalary, roleId, documentNumber, password);
 
         // Assert
         assertThat(user).isNotNull();
-        assertThat(user.getId()).isEqualTo(id);
         assertThat(user.getName()).isEqualTo(name);
         assertThat(user.getSurname()).isEqualTo(surname);
         assertThat(user.getBirthDate()).isEqualTo(birthDate);
@@ -49,7 +49,6 @@ class UserTest {
         // Act & Assert
         assertThatThrownBy(() ->
                 User.of(
-                        "123",
                         name,
                         "Doe",
                         LocalDate.of(1990, 1, 1),
@@ -58,14 +57,14 @@ class UserTest {
                         "john.doe@example.com",
                         BigDecimal.valueOf(5000000),
                         1L,
-                        "123456"
+                        "123456",
+                        "password"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("name: required and non-empty");
 
         assertThatThrownBy(() ->
                 User.of(
-                        "123",
                         "   ",
                         "Doe",
                         LocalDate.of(1990, 1, 1),
@@ -74,7 +73,8 @@ class UserTest {
                         "john.doe@example.com",
                         BigDecimal.valueOf(5000000),
                         1L,
-                        "123456"
+                        "123456",
+                        "password"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("name: required and non-empty");
@@ -88,7 +88,6 @@ class UserTest {
         // Act & Assert
         assertThatThrownBy(() ->
                 User.of(
-                        "123",
                         "John",
                         "Doe",
                         LocalDate.of(1990, 1, 1),
@@ -97,7 +96,8 @@ class UserTest {
                         invalidEmail,
                         BigDecimal.valueOf(5000000),
                         1L,
-                        "123456"
+                        "123456",
+                        "password"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("email: invalid format");
@@ -108,7 +108,6 @@ class UserTest {
         // Act & Assert
         assertThatThrownBy(() ->
                 User.of(
-                        "123",
                         "John",
                         "Doe",
                         LocalDate.of(1990, 1, 1),
@@ -117,14 +116,14 @@ class UserTest {
                         "john.doe@example.com",
                         BigDecimal.valueOf(-1),
                         1L,
-                        "123456"
+                        "123456",
+                        "password"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("baseSalary: out of range [0, 15000000]");
 
         assertThatThrownBy(() ->
                 User.of(
-                        "123",
                         "John",
                         "Doe",
                         LocalDate.of(1990, 1, 1),
@@ -133,7 +132,8 @@ class UserTest {
                         "john.doe@example.com",
                         BigDecimal.valueOf(20000000),
                         1L,
-                        "123456"
+                        "123456",
+                        "password"
                 )
         ).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("baseSalary: out of range [0, 15000000]");
@@ -146,7 +146,6 @@ class UserTest {
         BigDecimal maxSalary = new BigDecimal("15000000");
 
         User userWithMinSalary = User.of(
-                "123",
                 "John",
                 "Doe",
                 LocalDate.of(1990, 1, 1),
@@ -155,11 +154,11 @@ class UserTest {
                 "john.doe@example.com",
                 minSalary,
                 1L,
-                "123456"
+                "123456",
+                "password"
         );
 
         User userWithMaxSalary = User.of(
-                "123",
                 "John",
                 "Doe",
                 LocalDate.of(1990, 1, 1),
@@ -168,7 +167,8 @@ class UserTest {
                 "john.doe@example.com",
                 maxSalary,
                 1L,
-                "123456"
+                "123456",
+                "password"
         );
 
         assertThat(userWithMinSalary.getBaseSalary()).isEqualTo(minSalary);

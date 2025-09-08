@@ -8,4 +8,5 @@ import java.util.Map;
 public interface IUserApi {
     Mono<User> saveUser(User user);
     Mono<Map<String, Boolean>> userExistsByDocumentNumber(String documentNumber);
+    Mono<User> findByEmail(String email);
 }
