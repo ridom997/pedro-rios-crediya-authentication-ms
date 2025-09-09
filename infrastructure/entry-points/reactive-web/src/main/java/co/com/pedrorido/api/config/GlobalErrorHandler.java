@@ -12,6 +12,7 @@ import org.springframework.web.server.WebExceptionHandler;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 
 @Component
 @Order(-2)
@@ -26,6 +27,8 @@ public class GlobalErrorHandler implements WebExceptionHandler {
             status = HttpStatus.BAD_REQUEST;
         } else if (ex instanceof IllegalStateException) {
             status = HttpStatus.CONFLICT;
+        } else if (ex instanceof NoSuchElementException) {
+            status = HttpStatus.NOT_FOUND;
         }
 
         HashMap<String, String> data = new HashMap<>();
