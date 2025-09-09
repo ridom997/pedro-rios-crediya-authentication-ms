@@ -16,13 +16,13 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class User {
-    private String id;
     private String name;
     private String surname;
     private LocalDate birthDate;
     private String address;
     private String phone;
     private String email;
+    private String password;
     private BigDecimal baseSalary;
     private Long roleId;
     private String documentNumber;
@@ -31,13 +31,14 @@ public class User {
             Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     public static User of(
-            String id, String name, String surname, LocalDate birthDate,
+            String name, String surname, LocalDate birthDate,
             String address, String phone, String email,
-            BigDecimal baseSalary, Long roleId, String documentNumber
+            BigDecimal baseSalary, Long roleId, String documentNumber, String password
     ) {
         requireText("name", name);
         requireText("surname", surname);
         requireText("email", email);
+        requireText("password", password);
         Objects.requireNonNull(baseSalary, "baseSalary is required");
 
         if (!EMAIL_RX.matcher(email).matches()) {
@@ -49,13 +50,13 @@ public class User {
         }
 
         return new User(
-                id,
                 name.trim(),
                 surname.trim(),
                 birthDate,
                 address,
                 phone,
                 email.trim(),
+                password,
                 baseSalary,
                 roleId,
                 documentNumber

@@ -10,7 +10,6 @@ public interface UserDTOMapper {
     default User toDomain(UserDTO dto) {
         if (dto == null) throw new IllegalArgumentException("UserDTO is null");
         return User.of(
-                null,
                 dto.getName(),
                 dto.getSurname(),
                 dto.getBirthDate(),
@@ -19,14 +18,14 @@ public interface UserDTOMapper {
                 dto.getEmail(),
                 dto.getBaseSalary(),
                 dto.getRoleId(),
-                dto.getDocumentNumber()
+                dto.getDocumentNumber(),
+                dto.getPassword()
         );
     }
 
     default UserDTO toDto(User u) {
         if (u == null) throw new IllegalArgumentException("User is null");
         return UserDTO.builder()
-                .id(u.getId())
                 .name(u.getName())
                 .surname(u.getSurname())
                 .birthDate(u.getBirthDate())

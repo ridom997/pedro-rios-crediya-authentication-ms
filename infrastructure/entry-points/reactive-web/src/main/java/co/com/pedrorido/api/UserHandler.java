@@ -16,12 +16,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-
 
 @Component
 @RequiredArgsConstructor
@@ -31,32 +25,7 @@ public class UserHandler {
     private final UserDTOMapper userDTOMapper;
     private final TransactionalOperator tx;
 
-    @Operation(
-            summary = "Guardar usuario",
-            description = "Recibe un objeto UserDTO en el cuerpo de la solicitud, lo procesa y guarda el usuario. Devuelve la información del usuario guardado junto con un mensaje de éxito.",
-            requestBody = @RequestBody(
-                    description = "Información del usuario a guardar",
-                    required = true,
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))
-            ),
-            responses = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            description = "El usuario se agregó correctamente.",
-                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GeneralResponseDTO.class))
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "El cuerpo de la solicitud es inválido.",
-                            content = @Content
-                    ),
-                    @ApiResponse(
-                            responseCode = "409",
-                            description = "Fallo funcional.",
-                            content = @Content
-                    )
-            }
-    )
+
     public Mono<ResponseEntity<GeneralResponseDTO<UserDTO>>> listenSaveUser(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(UserDTO.class)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body is required")))
@@ -81,27 +50,6 @@ public class UserHandler {
                 .doOnError(log::error);
     }
 
-    @Operation(
-            summary = "Verificar existencia de un usuario por número de documento",
-            description = "Comprueba si un usuario existe en el sistema proporcionado su número de documento. Devuelve un valor booleano indicando la existencia del usuario.",
-            requestBody = @RequestBody(
-                    description = "Número de documento del usuario",
-                    required = true,
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
-            ),
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "La solicitud fue exitosa y la respuesta contiene un valor booleano indicando si el usuario existe.",
-                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GeneralResponseDTO.class))
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "El usuario no fue encontrado o no existe.",
-                            content = @Content
-                    )
-            }
-    )
 
     public Mono<ResponseEntity<GeneralResponseDTO<Boolean>>> listenUserExistsByDocumentNumber(ServerRequest serverRequest) {
         return Mono.justOrEmpty(serverRequest.queryParam("documentNumber"))
@@ -117,6 +65,28 @@ public class UserHandler {
                                     .data(existMap)
                                     .build(),
                             existMap.get("userExists") ? HttpStatus.OK : HttpStatus.NOT_FOUND);
+                })
+                .doOnSuccess(log::info)
+                .doOnError(log::error);
+    }
+
+    public Mono<ResponseEntity<GeneralResponseDTO<UserDTO>>> listenGetUserByEmail(ServerRequest serverRequest) {
+        return Mono.justOrEmpty(serverRequest.pathVariable("email"))
+                .filter(StringUtils::hasText)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Missing 'email' query param")))
+                .doOnNext(log::info)
+                .flatMap(email -> userUseCase.findByEmail(email).as(tx::transactional))
+                .map(userDTOMapper::toDto)
+                .map(userDto -> {
+                    HashMap<String, UserDTO> data = new HashMap<>();
+                    data.put("user", userDto);
+                    return new ResponseEntity<>(
+                            GeneralResponseDTO.<UserDTO>builder()
+                                    .success(true)
+                                    .message("User found successfully")
+                                    .data(data)
+                                    .build(),
+                            HttpStatus.OK);
                 })
                 .doOnSuccess(log::info)
                 .doOnError(log::error);

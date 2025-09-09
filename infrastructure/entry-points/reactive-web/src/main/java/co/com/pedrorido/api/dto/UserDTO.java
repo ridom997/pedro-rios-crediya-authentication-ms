@@ -12,7 +12,6 @@ import java.time.LocalDate;
 @Setter
 @Builder
 public class UserDTO {
-    private String id;
     private String name;
     private String surname;
     private LocalDate birthDate;
@@ -22,4 +21,5 @@ public class UserDTO {
     private BigDecimal baseSalary;
     private Long roleId;
     private String documentNumber;
+    private String password;
 }
