@@ -25,15 +25,15 @@ cors:
 
 adapters:
   r2dbc:
-    host: "localhost"
-    port: 5432
-    database: "crediya"
-    schema: "public"
-    username: "admin"
-    password: "admin123"
+    host: ${DB_HOST}
+    port: ${DB_PORT}
+    database: ${DB_NAME_LOAN}
+    schema: ${DB_SCHEMA:public}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
 
 security:
   jwt:
-    secret: "dev-very-long-secret-change-me-please-0123456789"
+    secret: ${SECURITY_JWT_SECRET}
     expirationSeconds: 3600
