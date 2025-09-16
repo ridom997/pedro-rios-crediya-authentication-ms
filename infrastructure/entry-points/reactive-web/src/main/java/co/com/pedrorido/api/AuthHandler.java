@@ -23,6 +23,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Component
 @AllArgsConstructor
@@ -38,7 +39,9 @@ public class AuthHandler {
         return serverRequest.bodyToMono(AuthRequest.class)
                 .flatMap(req -> {
                     return userUseCase.findByEmail(req.email())
-                            .switchIfEmpty(Mono.error(new IllegalArgumentException("bad_credentials")))
+                            .doOnError(NoSuchElementException.class, ex ->
+                                    Mono.error(new IllegalArgumentException("bad_credentials"))
+                            )
                             .flatMap(user -> {
                                 return loginService.validatePassword(req.password(), user).flatMap(u -> {
                                             return roleUseCase.findById(u.getRoleId());
