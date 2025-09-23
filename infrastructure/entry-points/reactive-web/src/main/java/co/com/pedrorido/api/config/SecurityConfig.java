@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .pathMatchers("/actuator/health", "/actuator/info").permitAll()
 
                         .pathMatchers(HttpMethod.GET, "/api/v1/users/exist").hasRole("CLIENTE")
-                        .pathMatchers(HttpMethod.GET, "/api/v1/admin/users/**").hasRole("ADMIN")
+                        .pathMatchers(HttpMethod.GET, "/api/v1/admin/users/**").hasAnyRole("ADMIN","CLIENTE")
                         .pathMatchers(HttpMethod.POST, "/api/v1/usuarios/**").hasAnyRole("ADMIN","ASESOR")
                         .pathMatchers(HttpMethod.POST, "/api/v1/login").permitAll()
 

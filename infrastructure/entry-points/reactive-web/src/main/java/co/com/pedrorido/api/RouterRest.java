@@ -4,6 +4,8 @@ import co.com.pedrorido.api.dto.AuthRequest;
 import co.com.pedrorido.api.dto.GeneralResponseDTO;
 import co.com.pedrorido.api.dto.UserDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -33,7 +35,7 @@ public class RouterRest {
                     beanMethod = "listenSaveUser",
                     operation = @Operation(
                             operationId = "SaveUser",
-                            summary = "Crear usuario",
+                            summary = "Crear usuario - ADMIN - ASESOR",
                             security = @SecurityRequirement(name = "bearerAuth"),
                             requestBody = @RequestBody(
                                     description = "Información del usuario a guardar",
@@ -100,6 +102,81 @@ public class RouterRest {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/users/exist",
+                    method = RequestMethod.GET,
+                    beanClass = UserHandler.class,
+                    beanMethod = "listenUserExistsByDocumentNumber",
+                    operation = @Operation(
+                            summary = "Verifica si un usuario existe por el número de documento - CLIENTE",
+                            description = "Este endpoint permite verificar si un usuario ya existe en el sistema utilizando su número de documento.",
+                            operationId = "listenUserExistsByDocumentNumber",
+                            security = @SecurityRequirement(name = "bearerAuth"),
+                            parameters = {
+                                    @Parameter(
+                                            name = "documentNumber",
+                                            description = "Número de Documento para la validar si existe",
+                                            in = ParameterIn.QUERY,
+                                            required = true,
+                                            schema = @Schema(type = "string", defaultValue = "1234567890")
+                                    )
+                            },
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "El usuario existe o no basado en el número de documento."
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Solicitud inválida. Falta el número de documento o está mal formado."
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Error interno del servidor."
+                                    )
+                            })
+
+            ),
+            @RouterOperation(
+                    path = "/api/v1/admin/users/{email}",
+                    produces = MediaType.APPLICATION_JSON_VALUE,
+                    method = RequestMethod.GET,
+                    beanClass = UserHandler.class,
+                    beanMethod = "listenGetUserByEmail",
+                    operation = @Operation(
+                            operationId = "getUserByEmail",
+                            summary = "Obtiene un usuario por su email - ADMIN - CLIENTE",
+                            description = "Recupera los detalles del usuario correspondiente al email proporcionado.",
+                            security = @SecurityRequirement(name = "bearerAuth"),
+                            parameters = {
+                                    @Parameter(
+                                            name = "email",
+                                            description = "Dirección de correo electrónico del usuario.",
+                                            required = true,
+                                            in = ParameterIn.PATH,
+                                            schema = @Schema(type = "string", format = "email")
+                                    )
+                            },
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Detalles del usuario retornados correctamente.",
+                                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                                    schema = @Schema(implementation = GeneralResponseDTO.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Solicitud inválida, verifica los parámetros proporcionados.",
+                                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "404",
+                                            description = "No se encontró ningún usuario con el email proporcionado.",
+                                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(AuthHandler authHandler, UserHandler userHandler) {
@@ -114,7 +191,7 @@ public class RouterRest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(re.getBody()))
         ).andRoute(
-                    GET("/api/v1/users/exist")
+                GET("/api/v1/users/exist")
                         .and(queryParam("documentNumber", v -> v != null && !v.isBlank())),
                 req -> userHandler.listenUserExistsByDocumentNumber(req)
                         .flatMap(re -> ServerResponse
